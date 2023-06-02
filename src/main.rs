@@ -1,10 +1,12 @@
-use std::process::exit;
+use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
+use icinga::IcingaCode;
 use proxy_health::query_proxy_health;
-use anyhow::{Result, Context};
+use anyhow::Context;
 use reqwest::Url;
 
+mod icinga;
 mod proxy_health;
 
 #[derive(Debug, Parser)]
@@ -33,14 +35,17 @@ enum SubCommands {
 
 
 #[tokio::main]
-async fn main() {
+async fn main() -> ExitCode {
     let args = CliArgs::parse();
 
     let result = match args.command {
         SubCommands::Health { name } => query_proxy_health(&name, &args.monitoring_api_key, &args.broker_url).await.context("Failed to query proxy health"),
     };
-    if let Err(e) = result {
+    let exit_code = if let Err(e) = result {
         eprint!("{e}");
-        exit(3);
+        IcingaCode::Unknown
+    } else {
+        IcingaCode::Ok
     };
+    exit_code.into()
 }

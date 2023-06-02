@@ -1,9 +1,10 @@
 [package]
 name = "beamctl"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 repository = "https://github.com/samply/beamctl"
-
+documentation = "https://github.com/samply/beamctl"
+license = "Apache-2.0"
 
 [dependencies]
 anyhow = "1"

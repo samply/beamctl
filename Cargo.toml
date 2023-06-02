@@ -15,7 +15,11 @@ tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
 # The profile that 'cargo dist' will build with
 [profile.dist]
 inherits = "release"
-lto = "thin"
+#opt-level = "z"     # Optimize for size.
+lto = "fat"         # Enable Link Time Optimization
+codegen-units = 1   # Reduce number of codegen units to increase optimizations.
+panic = "abort"     # Abort on panic
+strip = true        # Automatically strip symbols from the binary.
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]

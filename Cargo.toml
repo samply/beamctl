@@ -2,7 +2,7 @@
 name = "beamctl"
 version = "0.1.0"
 edition = "2021"
-repository = "https://github.com/Samply/beamctl"
+repository = "https://github.com/samply/beamctl"
 
 
 [dependencies]

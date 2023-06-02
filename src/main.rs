@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use clap::{Parser, Subcommand};
 use proxy_health::query_proxy_health;
 use anyhow::{Result, Context};
@@ -31,10 +33,14 @@ enum SubCommands {
 
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() {
     let args = CliArgs::parse();
 
-    match args.command {
+    let result = match args.command {
         SubCommands::Health { name } => query_proxy_health(&name, &args.monitoring_api_key, &args.broker_url).await.context("Failed to query proxy health"),
-    }
+    };
+    if let Err(e) = result {
+        eprint!("{e}");
+        exit(3);
+    };
 }

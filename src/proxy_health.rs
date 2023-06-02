@@ -1,6 +1,7 @@
 use std::{time::SystemTime, process::exit};
 
-use reqwest::{Client, StatusCode};
+use anyhow::{Result, Context};
+use reqwest::{Client, StatusCode, Url};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -8,11 +9,12 @@ pub struct ProxyStatus {
     last_active: SystemTime
 }
 
-pub async fn query_proxy_health(proxy_name: &str, api_key: &str, broker_url: Option<String>) {
+pub async fn query_proxy_health(proxy_name: &str, api_key: &str, broker_url: &Url) -> Result<()> {
     let client = Client::new();
-    let url = format!("{}/v1/health/{proxy_name}", broker_url.unwrap_or("http://localhost:8080".to_string()));
-    let req = client.get(url).basic_auth("", Some(api_key)).build().expect("Should build");
-    let res = client.execute(req).await.expect("Failed to execute request");
+    let mut url = broker_url.clone();
+    url.set_path(&format!("v1/health/{proxy_name}"));
+    let req = client.get(url).basic_auth("", Some(api_key)).build().context("Failed to build request")?;
+    let res = client.execute(req).await.context("Failed to execute request")?;
     match res.status() {
         StatusCode::SERVICE_UNAVAILABLE => {
             println!("Proxy {proxy_name} unavalible!");

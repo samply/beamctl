@@ -12,7 +12,7 @@ pub struct ProxyStatus {
 pub async fn query_proxy_health(proxy_name: &str, api_key: &str, broker_url: &Url) -> Result<()> {
     let client = Client::new();
     let mut url = broker_url.clone();
-    url.set_path(&format!("v1/health/{proxy_name}"));
+    url.set_path(&format!("v1/health/proxies/{proxy_name}"));
     let req = client.get(url).basic_auth("", Some(api_key)).build().context("Failed to build request")?;
     let res = client.execute(req).await.context("Failed to execute request")?;
     match res.status() {

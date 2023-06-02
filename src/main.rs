@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use proxy_health::query_proxy_health;
-use anyhow::{Result, Ok, Context};
+use anyhow::{Result, Context};
 use reqwest::Url;
 
 mod proxy_health;

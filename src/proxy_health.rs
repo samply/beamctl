@@ -17,7 +17,7 @@ pub async fn query_proxy_health(proxy_name: &str, api_key: &str, broker_url: &Ur
     let res = client.execute(req).await.context("Failed to execute request")?;
     match res.status() {
         StatusCode::SERVICE_UNAVAILABLE => {
-            println!("Proxy {proxy_name} unavalible!");
+            println!("Proxy {proxy_name} unavailable!");
             exit(2);
         },
         StatusCode::UNAUTHORIZED => {

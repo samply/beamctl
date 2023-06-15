@@ -143,15 +143,3 @@ jobs:
       - name: mark release as non-draft
         run: |
           gh release edit ${{ github.ref_name }} --draft=false
-
-  # Or, delete the release if something has failed.
-  delete-release:
-    needs: [create-release, upload-artifacts, pre-check]
-    if: failure()
-    runs-on: ubuntu-latest
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - name: delete failed release
-        run: |
-          gh release delete ${{ github.ref_name }} --yes

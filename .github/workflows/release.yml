@@ -44,7 +44,7 @@ on:
 jobs:
   pre-check:
     name: Security, License Check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
@@ -52,7 +52,7 @@ jobs:
 
   # Create the Github Release™ so the packages have something to be uploaded to
   create-release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       has-releases: ${{ steps.create-release.outputs.has-releases }}
     env:
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
-        run: rustup update 1.67.1 --no-self-update && rustup default 1.67.1
+        run: rustup update 1.70.0 --no-self-update && rustup default 1.70.0
       - name: Install cargo-dist
         run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.7/cargo-dist-installer.sh | sh
       - id: create-release
@@ -87,18 +87,15 @@ jobs:
   # Build and packages all the things
   upload-artifacts:
     # Let the initial task tell us to not run (currently very blunt)
-    needs: [create-release, pre-check]
+    needs: create-release
     if: ${{ needs.create-release.outputs.has-releases == 'true' }}
     strategy:
       matrix:
         # For these target platforms
         include:
-        - os: ubuntu-22.04
-          dist-args: --artifacts=global
+        - os: macos-11
+          dist-args: --artifacts=local --target=aarch64-apple-darwin --target=x86_64-apple-darwin
           install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.7/cargo-dist-installer.sh | sh
-#        - os: macos-11
-#          dist-args: --artifacts=local --target=aarch64-apple-darwin --target=x86_64-apple-darwin
-#          install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.7/cargo-dist-installer.sh | sh
         - os: ubuntu-22.04
           dist-args: --artifacts=local --target=x86_64-unknown-linux-gnu
           install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.7/cargo-dist-installer.sh | sh
@@ -112,7 +109,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
-        run: rustup update 1.67.1 --no-self-update && rustup default 1.67.1
+        run: rustup update 1.70.0 --no-self-update && rustup default 1.70.0
       - name: Install cargo-dist
         run: ${{ matrix.install-dist }}
       - name: Run cargo-dist
@@ -138,7 +135,7 @@ jobs:
     # Only run after all the other tasks, but it's ok if upload-artifacts was skipped
     needs: [create-release, upload-artifacts, pre-check]
     if: ${{ always() && needs.create-release.result == 'success' && (needs.upload-artifacts.result == 'skipped' || needs.upload-artifacts.result == 'success') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -146,3 +143,15 @@ jobs:
       - name: mark release as non-draft
         run: |
           gh release edit ${{ github.ref_name }} --draft=false
+
+  # Or, delete the release if something has failed.
+  delete-release:
+    needs: [create-release, upload-artifacts, pre-check]
+    if: failure()
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: delete failed release
+        run: |
+          gh release delete ${{ github.ref_name }} --yes

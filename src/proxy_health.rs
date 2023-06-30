@@ -29,11 +29,11 @@ pub async fn query_proxy_health(proxy_name: &str, api_key: &str, broker_url: &Ur
             let last_report_dur = status.last_active.elapsed().unwrap();
             let minutes = last_report_dur.as_secs() / 60;
             let seconds = last_report_dur.as_secs() % 60;
-            println!("Beam.Proxy unavalible: last report was {minutes}m and {seconds}s ago!");
+            println!("Beam.Proxy unavailable: last report was {minutes}m and {seconds}s ago!");
             exit(2);
         }
         StatusCode::OK => {
-            println!("Beam.Proxy avalible");
+            println!("Beam.Proxy is connected to the Broker.");
             exit(0);
         },
         unexpectd => {

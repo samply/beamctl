@@ -2,7 +2,7 @@ use std::process::ExitCode;
 
 #[repr(u8)]
 #[allow(dead_code)]
-pub(crate) enum IcingaCode {
+pub enum IcingaCode {
     Ok = 0,
     Warning = 1,
     Critical = 2,

@@ -41,11 +41,11 @@ async fn main() -> ExitCode {
     let result = match args.command {
         SubCommands::Health { name } => query_proxy_health(&name, &args.monitoring_api_key, &args.broker_url).await.context("Failed to query proxy health"),
     };
-    let exit_code = if let Err(e) = result {
-        eprint!("{e}");
-        IcingaCode::Unknown
-    } else {
-        IcingaCode::Ok
-    };
-    exit_code.into()
+    match result {
+        Err(e) => {
+            print!("{e}");
+            IcingaCode::Unknown
+        },
+        Ok(code) => code,
+    }.into()
 }

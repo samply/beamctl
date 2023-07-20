@@ -43,7 +43,7 @@ async fn main() -> ExitCode {
     };
     match result {
         Err(e) => {
-            eprint!("{e}");
+            print!("{e}");
             IcingaCode::Unknown
         },
         Ok(code) => code,

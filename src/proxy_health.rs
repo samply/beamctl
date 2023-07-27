@@ -26,7 +26,9 @@ pub async fn query_proxy_health(proxy_name: &str, api_key: &str, broker_url: &Ur
             Err(anyhow!("Invalid monitoring apikey!"))
         },
         StatusCode::SERVICE_UNAVAILABLE => {
-            let status: ProxyStatus = res.json().await.unwrap();
+            let Ok(status) = res.json::<ProxyStatus>().await else {
+                return Err(anyhow!("Got status 503 from broker without a proxy status!"));
+            };
             let last_report_dur = status.last_active.elapsed().unwrap();
             let minutes = last_report_dur.as_secs() / 60;
             let seconds = last_report_dur.as_secs() % 60;

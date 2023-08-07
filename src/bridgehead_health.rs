@@ -12,9 +12,11 @@ pub struct BridgeheadCheck {
     #[arg(long, env, value_parser)]
     beam_proxy_url: Url,
 
+    /// Beam app id of this application
     #[arg(long, env, value_parser)]
     beam_proxy_name: String,
 
+    // Beam app secret of this application
     #[arg(long, env, value_parser)]
     beam_proxy_secret: String,
 
@@ -39,7 +41,6 @@ pub async fn check_bridgehead(
         to
     }: BridgeheadCheck
 ) -> Result<IcingaCode> {
-    println!("{checks:?}");
     let client = reqwest::Client::new();
     let task = TaskRequest {
         id: MsgId::new(),

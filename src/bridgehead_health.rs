@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use beam_lib::{TaskRequest, FailureStrategy, MsgId, AppId};
 use clap::Args;
 use monitoring_lib::Check;

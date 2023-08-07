@@ -2,7 +2,6 @@ use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
 use icinga::IcingaCode;
-use monitoring_lib::Check;
 use proxy_health::query_proxy_health;
 use bridgehead_health::check_bridgehead;
 use anyhow::Context;

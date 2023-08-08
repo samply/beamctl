@@ -1,4 +1,4 @@
-use beam_lib::{TaskRequest, FailureStrategy, MsgId, AppId};
+use beam_lib::{TaskRequest, FailureStrategy, MsgId, AppId, TaskResult};
 use clap::Args;
 use monitoring_lib::Check;
 use anyhow::{Result, bail};
@@ -24,7 +24,7 @@ pub struct BridgeheadCheck {
     checks: Vec<Check>,
 
     /// Receiving bridgehead-monitoring beam id
-    #[arg(long, env, value_parser)]
+    #[arg(long, value_parser)]
     to: String
 }
 
@@ -68,7 +68,7 @@ pub async fn check_bridgehead(
     if res.status() != StatusCode::OK {
         bail!("Failed to retrive task: Got status {}", res.status());
     }
-    let results = res.json::<Vec<TaskRequest<Vec<String>>>>().await?.pop();
+    let results = res.json::<Vec<TaskResult<Vec<String>>>>().await?.pop();
     match results {
         Some(task) => checks.into_iter().zip(task.body).for_each(|(check, result)| println!("{check}: {result}")),
         None => bail!("Got no results from task"),

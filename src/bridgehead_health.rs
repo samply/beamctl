@@ -1,6 +1,6 @@
 use beam_lib::{TaskRequest, FailureStrategy, MsgId, AppId, TaskResult};
 use clap::Args;
-use monitoring_lib::Check;
+use bridgehead_monitoring_lib::Check;
 use anyhow::{Result, bail};
 use reqwest::{Url, header, StatusCode};
 use serde_json::Value;

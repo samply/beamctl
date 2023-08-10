@@ -12,6 +12,9 @@ clap = { version = "4.3", features = ["derive", "env"] }
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["rt", "macros", "rt-multi-thread"] }
+bridgehead-monitoring-lib = { git = "https://github.com/samply/bridgehead-monitoring" }
+beam-lib = { git = "https://github.com/samply/beam", branch = "develop" }
+serde_json = "1.0.104"
 
 [profile.release]
 #opt-level = "z"     # Optimize for size.

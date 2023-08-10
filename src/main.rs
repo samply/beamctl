@@ -3,11 +3,13 @@ use std::process::ExitCode;
 use clap::{Parser, Subcommand};
 use icinga::IcingaCode;
 use proxy_health::query_proxy_health;
+use bridgehead_health::check_bridgehead;
 use anyhow::Context;
 use reqwest::Url;
 
 mod icinga;
 mod proxy_health;
+mod bridgehead_health;
 
 #[derive(Debug, Parser)]
 #[clap(
@@ -16,12 +18,7 @@ mod proxy_health;
     arg_required_else_help(true),
 )]
 struct CliArgs {
-    #[clap(long, env, value_parser)]
-    monitoring_api_key: String,
-
-    #[clap(long, env, value_parser)]
-    broker_url: Url,
-
+    
     #[command(subcommand)]
     command: SubCommands,
 }
@@ -29,8 +26,15 @@ struct CliArgs {
 #[derive(Debug, Subcommand)]
 enum SubCommands {
     Health {
+        #[arg(long, env, value_parser)]
+        monitoring_api_key: String,
+        
+        #[arg(long, env, value_parser)]
+        broker_url: Url,
         name: String,
-    }
+    },
+    Bridgehead(bridgehead_health::BridgeheadCheck)
+    
 }
 
 
@@ -39,11 +43,12 @@ async fn main() -> ExitCode {
     let args = CliArgs::parse();
 
     let result = match args.command {
-        SubCommands::Health { name } => query_proxy_health(&name, &args.monitoring_api_key, &args.broker_url).await.context("Failed to query proxy health"),
+        SubCommands::Health { name, monitoring_api_key, broker_url } => query_proxy_health(&name, &monitoring_api_key, &broker_url).await.context("Failed to query proxy health"),
+        SubCommands::Bridgehead(bridgehead_check) => check_bridgehead(bridgehead_check).await,
     };
     match result {
         Err(e) => {
-            print!("{e}");
+            println!("{e}");
             IcingaCode::Unknown
         },
         Ok(code) => code,

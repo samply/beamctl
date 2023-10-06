@@ -111,11 +111,11 @@ jobs:
     needs: [ build-rust ]
     runs-on: ubuntu-22.04
 
-    strategy:
-      matrix:
-        features:
-          - ""
-          - "sockets"
+#    strategy:
+#      matrix:
+#        features:
+#          - ""
+#          - "sockets"
 
     steps:
       - uses: actions/checkout@v3

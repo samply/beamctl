@@ -1,6 +1,6 @@
 use beam_lib::{TaskRequest, FailureStrategy, MsgId, AppId, TaskResult};
 use clap::Args;
-use bridgehead_monitoring_lib::Check;
+use bridgehead_monitoring_lib::{Check, CheckResult};
 use anyhow::{Result, bail};
 use reqwest::{Url, header, StatusCode};
 use serde_json::Value;
@@ -68,10 +68,20 @@ pub async fn check_bridgehead(
     if res.status() != StatusCode::OK {
         bail!("Failed to retrive task: Got status {}", res.status());
     }
-    let results = res.json::<Vec<TaskResult<Vec<String>>>>().await?.pop();
-    match results {
-        Some(task) => checks.into_iter().zip(task.body).for_each(|(check, result)| println!("{check}: {result}")),
-        None => bail!("Got no results from task"),
+    let results = res.json::<Vec<TaskResult<Vec<CheckResult>>>>().await?.pop();
+    let Some(task) = results else {
+        bail!("Got no results from task")
     };
-    Ok(IcingaCode::Ok)
+    let mut worst_case = IcingaCode::Ok;
+    checks
+        .into_iter()
+        .zip(task.body)
+        .map(|(check, result)| match result {
+            CheckResult::Ok(res) => (check, res),
+            CheckResult::Err(e) | CheckResult::Unexpected(e) => {
+                worst_case = IcingaCode::Warning;
+                (check, e)
+            }
+        }).for_each(|(check, res)| println!("{check}: {res}"));
+    Ok(worst_case)
 }

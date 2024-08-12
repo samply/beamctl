@@ -8,7 +8,7 @@ use crate::icinga::IcingaCode;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProxyStatus {
-    last_active: SystemTime
+    last_disconnect: Option<SystemTime>,
 }
 
 pub async fn query_proxy_health(proxy_name: &str, api_key: &str, broker_url: &Url) -> Result<IcingaCode> {
@@ -29,7 +29,10 @@ pub async fn query_proxy_health(proxy_name: &str, api_key: &str, broker_url: &Ur
             let Ok(status) = res.json::<ProxyStatus>().await else {
                 return Err(anyhow!("Got status 503 from broker without a proxy status!"));
             };
-            let last_report_dur = status.last_active.elapsed().unwrap();
+            let last_report_dur = status.last_disconnect
+                .expect("This field should always exist, since we got code 503")
+                .elapsed()
+                .expect("Error: Check system time.");
             let minutes = last_report_dur.as_secs() / 60;
             let seconds = last_report_dur.as_secs() % 60;
             println!("Beam.Proxy unavailable: last report was {minutes}m and {seconds}s ago!");
